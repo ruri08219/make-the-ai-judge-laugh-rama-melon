@@ -12,6 +12,7 @@ Entry (128 chars):
 """
 
 import os
+import unicodedata
 
 ENTRY = (
     "We spent three weeks in meetings about a bug, "
@@ -23,10 +24,14 @@ MAX_CHARS = 200
 
 
 def validate(text):
-    """Gate: UTF-8, 1-200 chars, exactly one line, not only whitespace."""
+    """Gate: UTF-8, 1-200 chars, exactly one line, not only whitespace,
+    no control/non-printable characters (Unicode category C)."""
     if not isinstance(text, str):
         raise ValueError("entry must be text")
     text.encode("utf-8")  # raises on lone surrogates / non-encodable chars
+    for ch in text:
+        if unicodedata.category(ch).startswith("C"):
+            raise ValueError("entry must not contain control/non-printable characters")
     if not text.strip():
         raise ValueError("entry must not be only whitespace")
     if len(text) > MAX_CHARS:
